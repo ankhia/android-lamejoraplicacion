@@ -20,7 +20,8 @@ public class DbHelper extends SQLiteOpenHelper {
             "id_type INTEGER, " +
             "name TEXT," +
             "image TEXT," +
-            "chapter INTEGER" +
+            "chapter INTEGER," +
+            "season INTEGER" +
             ");";
 
     private String tableType = "CREATE TABLE t_chapter (" +

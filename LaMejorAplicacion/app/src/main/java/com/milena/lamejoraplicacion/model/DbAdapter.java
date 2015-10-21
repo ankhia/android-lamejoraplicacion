@@ -25,7 +25,7 @@ public class DbAdapter {
     private DbAdapter( Context ctx ){
          context = ctx;
          dbHelper = new DbHelper(context);
-//         initDatosLocos();
+         //initDatosLocos();
     }
 
     public DbAdapter open(){
@@ -39,23 +39,21 @@ public class DbAdapter {
 
     public void initDatosLocos( ){
         open();
-        insertSerie(DbHelper.ANIME, "One Piece", 1, "");
-        insertSerie(DbHelper.ANIME, "Naruto", 2, "");
-        insertSerie(DbHelper.ANIME, "Bleach", 3, "");
-        insertSerie(DbHelper.ANIME, "Tokyio Ghoul", 4, "");
-        insertSerie(DbHelper.ANIME, "Cowboy Bebop", 5, "");
-        insertSerie(DbHelper.ANIME, "Una mas", 6, "");
+        insertSerie(DbHelper.ANIME, "One Piece", 613, "", -1);
+        insertSerie(DbHelper.ANIME, "Naruto", 450, "", 2);
+        insertSerie(DbHelper.ANIME, "Bleach", 58, "",-1);
+        insertSerie(DbHelper.ANIME, "Tokyio Ghoul", 5, "", 1);
+        insertSerie(DbHelper.TV_SHOW, "The Walking Dead", 6, "", 5);
+        insertSerie(DbHelper.TV_SHOW, "Terriers", 6, "", 1);
+     }
 
-
-
-    }
-
-    public long insertSerie( int idType, String name, int chapter, String image){
+    public long insertSerie( int idType, String name, int chapter, String image, int season){
         ContentValues initialValues = new ContentValues();
         initialValues.put("name", name);
         initialValues.put("chapter", chapter);
         initialValues.put("image", image);
         initialValues.put("id_type", idType);
+        initialValues.put("season", season);
         return db.insert("t_serie", null, initialValues);
     }
 
@@ -65,8 +63,14 @@ public class DbAdapter {
         db.update("t_serie", initialValues, "id = ?", new String[]{idSerie + ""});
     }
 
+    public void updateSeason( long idSerie, int season ){
+        ContentValues initialValues = new ContentValues();
+        initialValues.put("season", season);
+        db.update("t_serie", initialValues, "id = ?", new String[]{idSerie + ""});
+    }
+
     public Cursor getAllItems( ){
-        return db.rawQuery("SELECT id as _id, name, chapter FROM t_serie", null);
+        return db.rawQuery("SELECT id as _id, name, chapter, season FROM t_serie", null);
     }
 
 }

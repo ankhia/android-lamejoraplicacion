@@ -52,10 +52,16 @@ public class CursorSeriesAdapter extends CursorAdapter {
         final String nameText = cursor.getString(cursor.getColumnIndexOrThrow("name"));
         String chapterText = cursor.getInt(cursor.getColumnIndexOrThrow("chapter"))+"";
 
+        final long position = cursor.getLong(cursor.getColumnIndex("_id"));
+
+        LinearLayout seasonLayout = (LinearLayout) view.findViewById(R.id.season_layout);
+        if( cursor.getInt(cursor.getColumnIndexOrThrow("season")) != -1 ){
+            seasonLayout.setVisibility(View.VISIBLE);
+            seasonHandler(view, context, cursor, position);
+        }
+
         name.setText(nameText);
         count.setText(chapterText);
-
-        final long position = cursor.getLong(cursor.getColumnIndex("_id"));
 
         count.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -119,5 +125,59 @@ public class CursorSeriesAdapter extends CursorAdapter {
         });
 
     }
+
+    public void seasonHandler( View view, Context context, final Cursor cursor, final long position ){
+        final TextView textSeason = (TextView) view.findViewById(R.id.season);
+        final EditText editSeason = (EditText) view.findViewById(R.id.season_edit);
+
+        textSeason.setText("Season: " + cursor.getInt(cursor.getColumnIndexOrThrow("season")));
+
+        textSeason.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                textSeason.setVisibility(View.GONE);
+                String[] a = textSeason.getText().toString().trim().split(":");
+                int numberSeason = 2;// Integer.parseInt(a[1].trim());
+                editSeason.setText(numberSeason+"");
+                editSeason.setVisibility(View.VISIBLE);
+                editSeason.requestFocus();
+                editSeason.setSelection(editSeason.getText().length());
+            }
+        });
+
+        editSeason.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    int total = Integer.parseInt(editSeason.getText() + "");
+                    db.updateSeason(position, total);
+                    textSeason.setText(total + "");
+                    editSeason.setVisibility(View.GONE);
+                    textSeason.setVisibility(View.VISIBLE);
+                    swapCursor(db.getAllItems());
+                }
+            }
+        });
+
+        editSeason.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                boolean handled = false;
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    int total = Integer.parseInt(editSeason.getText() + "");
+                    db.updateSeason(position, total);
+                    editSeason.setVisibility(View.GONE);
+                    textSeason.setVisibility(View.VISIBLE);
+                    textSeason.setText("Season: " +editSeason.getText());
+                    handled = true;
+                }
+                return handled;
+            }
+        });
+
+    }
+
+
+
 
 }

@@ -5,6 +5,8 @@
     >
 
     <RelativeLayout
+        android:id="@+id/row"
+        android:background="@drawable/bg_row"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content">
 

@@ -16,24 +16,32 @@ import android.widget.ArrayAdapter;
 import android.widget.CursorAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.milena.lamejoraplicacion.R;
+import com.milena.lamejoraplicacion.handlers.SelectRowHandler;
 import com.milena.lamejoraplicacion.model.DbAdapter;
 
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Created by Milena on 31/08/2015.
  */
 public class CursorSeriesAdapter extends CursorAdapter {
 
-    private int currentEditOnFocus;
     private DbAdapter db;
 
-    public CursorSeriesAdapter(Context context, Cursor cursor, int flags) {
+    private Set<Long> rowsSelected;
+
+    private SelectRowHandler selectRowHandler;
+
+    public CursorSeriesAdapter(Context context, Cursor cursor, int flags, SelectRowHandler selectRowHandler) {
         super(context, cursor, FLAG_REGISTER_CONTENT_OBSERVER);
-        currentEditOnFocus = -1;
+        this.selectRowHandler = selectRowHandler;
+        rowsSelected = new TreeSet<Long>();
         db = DbAdapter.getInstance(context);
     }
 
@@ -45,15 +53,14 @@ public class CursorSeriesAdapter extends CursorAdapter {
 
     @Override
     public void bindView(View view, Context context, final Cursor cursor) {
+        final long position = cursor.getLong(cursor.getColumnIndex("_id"));
+        view.setSelected(rowsSelected.contains(position));
+        final RelativeLayout linearRow = (RelativeLayout) view.findViewById(R.id.row);
         TextView name = (TextView) view.findViewById(R.id.name);
         final TextView count = (TextView) view.findViewById(R.id.count);
         final EditText editCount = (EditText) view.findViewById(R.id.count_edit);
-
         final String nameText = cursor.getString(cursor.getColumnIndexOrThrow("name"));
         String chapterText = cursor.getInt(cursor.getColumnIndexOrThrow("chapter"))+"";
-
-        final long position = cursor.getLong(cursor.getColumnIndex("_id"));
-
         LinearLayout seasonLayout = (LinearLayout) view.findViewById(R.id.season_layout);
         if( cursor.getInt(cursor.getColumnIndexOrThrow("season")) != -1 ){
             seasonLayout.setVisibility(View.VISIBLE);
@@ -94,7 +101,7 @@ public class CursorSeriesAdapter extends CursorAdapter {
                 boolean handled = false;
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
                     int total = Integer.parseInt(editCount.getText() + "");
-                    db.updateChapter( position, total );
+                    db.updateChapter(position, total);
                     editCount.setVisibility(View.GONE);
                     count.setVisibility(View.VISIBLE);
                     count.setText(editCount.getText());
@@ -124,6 +131,21 @@ public class CursorSeriesAdapter extends CursorAdapter {
             }
         });
 
+        LinearLayout linearImageContent = (LinearLayout) view.findViewById(R.id.content_icon);
+        linearImageContent.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectRowHandler.onRowSelected(position);
+                if( !linearRow.isSelected() ) {
+                    rowsSelected.add(position);
+                    linearRow.setSelected(true);
+                }
+                else {
+                    linearRow.setSelected(false);
+                    rowsSelected.remove(position);
+                }
+            }
+        });
     }
 
     public void seasonHandler( View view, Context context, final Cursor cursor, final long position ){
@@ -137,7 +159,8 @@ public class CursorSeriesAdapter extends CursorAdapter {
             public void onClick(View v) {
                 textSeason.setVisibility(View.GONE);
                 String[] a = textSeason.getText().toString().trim().split(":");
-                int numberSeason = 2;// Integer.parseInt(a[1].trim());
+                Log.v("MILE", "a[1] " + a[1]);
+                int numberSeason = 2; //Integer.parseInt(a[1].trim());
                 editSeason.setText(numberSeason+"");
                 editSeason.setVisibility(View.VISIBLE);
                 editSeason.requestFocus();
@@ -174,10 +197,13 @@ public class CursorSeriesAdapter extends CursorAdapter {
                 return handled;
             }
         });
-
     }
 
+    public Set<Long> getRowsSelected( ){
+        return rowsSelected;
+    }
 
-
-
+    public void clear( ){
+        rowsSelected = new TreeSet<Long>();
+    }
 }

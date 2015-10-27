@@ -57,6 +57,15 @@ public class DbAdapter {
         return db.insert("t_serie", null, initialValues);
     }
 
+    public void updateSerie( long idSerie, int idType, String name, int episode, int season ){
+        ContentValues initialValues = new ContentValues();
+        initialValues.put("season", season);
+        initialValues.put("chapter", episode);
+        initialValues.put("name", name);
+        initialValues.put("id_type", idType);
+        db.update("t_serie", initialValues, "id = ?", new String[]{idSerie + ""});
+    }
+
     public void updateChapter( long idSerie, int chapter ){
         ContentValues initialValues = new ContentValues();
         initialValues.put("chapter", chapter);
@@ -69,8 +78,15 @@ public class DbAdapter {
         db.update("t_serie", initialValues, "id = ?", new String[]{idSerie + ""});
     }
 
+    public Cursor getSerieById(long idSerie){
+        return db.rawQuery("SELECT id as _id, name, chapter, season FROM t_serie WHERE id="+idSerie, null);
+    }
+
     public Cursor getAllItems( ){
         return db.rawQuery("SELECT id as _id, name, chapter, season FROM t_serie", null);
     }
 
+    public void deleteSerie(long id){
+        db.delete("t_serie", "id=?", new String[]{id + ""});
+    }
 }

@@ -61,7 +61,6 @@ public class DbHelper extends SQLiteOpenHelper {
         initialValues.put("id_type",LIBRO);
         initialValues.put("description","Libro");
         db.insert("t_chapter", null, initialValues);
-
     }
 
 }
